@@ -1,0 +1,704 @@
+PM WhatsApp Bot
+
+WhatsApp Bot untuk membantu proses Preventive Maintenance (PM) mesin melalui WhatsApp.
+
+Bot digunakan untuk melihat daftar mesin, mengecek status PM, melihat informasi mesin, dan mencatat mesin yang sudah selesai dilakukan PM.
+
+📌 Fitur
+📋 Melihat daftar mesin yang belum PM
+📊 Melihat status PM bulanan
+🔧 Melihat detail mesin berdasarkan ID
+✅ Menandai mesin sudah dilakukan PM
+🔐 Pembatasan akses berdasarkan nomor admin
+👥 Bot dapat dibatasi hanya pada grup PM tertentu
+📅 Mendukung periode PM bulanan
+🗂️ Data mesin menggunakan CSV
+💾 Penyimpanan data PM menggunakan database
+🔄 Dapat dijalankan menggunakan PM2
+🌐 Source code dapat dikelola melalui GitHub
+📁 Struktur Project
+pm-wa-bot/
+├── src/
+│   ├── index.js
+│   ├── db.js
+│   └── import-pm.js
+│
+├── data/
+│   └── machines.csv
+│
+├── .env
+├── .env.example
+├── .gitignore
+├── package.json
+├── package-lock.json
+└── README.md
+💻 Persyaratan
+
+Pastikan server/VPS sudah memiliki:
+
+Linux
+Node.js
+npm
+Git
+WhatsApp aktif untuk nomor bot
+Akses internet
+PM2 (opsional, tetapi disarankan)
+
+Cek Node.js:
+
+node -v
+
+Cek npm:
+
+npm -v
+
+Cek Git:
+
+git --version
+🚀 Instalasi
+1. Clone Repository
+
+Masuk ke server:
+
+cd ~
+
+Clone repository:
+
+git clone git@github.com:USERNAME/pm-wa-bot.git
+
+Masuk ke project:
+
+cd pm-wa-bot
+
+Ganti USERNAME dengan username GitHub pemilik repository.
+
+2. Install Dependency
+
+Jalankan:
+
+npm install
+⚙️ Konfigurasi .env
+
+Buat file .env:
+
+cp .env.example .env
+
+Edit:
+
+nano .env
+
+Contoh:
+
+ADMIN_NUMBERS=628xxxxxxxxxx,628xxxxxxxxxx
+REMINDER_CHAT_JID=
+TZ=Asia/Jakarta
+PM_GROUP_ID=120xxxxxxxxxxxx@g.us
+PM_PERIOD=2026-09
+📝 Penjelasan .env
+ADMIN_NUMBERS
+
+Berisi nomor WhatsApp yang memiliki akses untuk menjalankan command PM.
+
+Contoh:
+
+ADMIN_NUMBERS=6281111111111,6282222222222,6283333333333
+
+Jika terdapat beberapa admin, pisahkan dengan koma.
+
+Format nomor menggunakan format internasional:
+
+628xxxxxxxxxx
+
+Bukan:
+
+08xxxxxxxxxx
+PM_GROUP_ID
+
+ID grup WhatsApp tempat bot digunakan.
+
+Contoh:
+
+PM_GROUP_ID=120363143891365779@g.us
+
+Bot hanya akan memproses command dari grup yang sudah ditentukan.
+
+TZ
+
+Timezone server:
+
+TZ=Asia/Jakarta
+
+Untuk Indonesia gunakan:
+
+Asia/Jakarta
+PM_PERIOD
+
+Periode PM yang sedang berjalan.
+
+Contoh September 2026:
+
+PM_PERIOD=2026-09
+
+Oktober 2026:
+
+PM_PERIOD=2026-10
+REMINDER_CHAT_JID
+
+Digunakan jika fitur reminder otomatis diaktifkan.
+
+Contoh:
+
+REMINDER_CHAT_JID=120363xxxxxxxx@g.us
+
+Jika tidak digunakan:
+
+REMINDER_CHAT_JID=
+🗂️ Data Mesin
+
+Data mesin berada di:
+
+data/machines.csv
+
+Format:
+
+bank,area,jenis,id_mesin,nama_mesin,status
+
+Contoh:
+
+bank,area,jenis,id_mesin,nama_mesin,status
+BCA,Jakarta Utara,ATM,ATM001,ATM BCA Mall A,ACTIVE
+BCA,Jakarta Utara,ATM,ATM002,ATM BCA Mall B,ACTIVE
+BRI,Jakarta Utara,ATM,ATM003,ATM BRI Mall C,ACTIVE
+Penjelasan Kolom
+Kolom	Keterangan
+bank	Nama bank
+area	Area mesin
+jenis	Jenis mesin
+id_mesin	ID unik mesin
+nama_mesin	Nama/lokasi mesin
+status	Status mesin
+📅 Menambahkan ID Mesin Setiap Bulan
+
+Setiap awal bulan, update file:
+
+nano data/machines.csv
+
+Tambahkan mesin baru pada bagian bawah.
+
+Contoh:
+
+BCA,Jakarta Utara,ATM,ATM004,ATM BCA Mall D,ACTIVE
+BCA,Jakarta Utara,ATM,ATM005,ATM BCA Mall E,ACTIVE
+🔍 Cek ID Mesin Duplikat
+
+Sebelum import, jalankan:
+
+cut -d',' -f4 data/machines.csv | sort | uniq -d
+
+Jika tidak ada output, berarti tidak ditemukan ID duplikat.
+
+Jika muncul:
+
+ATM004
+
+berarti ID tersebut terdapat lebih dari satu kali.
+
+Perbaiki terlebih dahulu sebelum melakukan import.
+
+📥 Import Data Mesin
+
+Setelah CSV diperbarui:
+
+node src/import-pm.js
+
+Pastikan proses selesai tanpa error.
+
+📆 Mengganti Periode PM
+
+Misalnya bulan sebelumnya:
+
+PM_PERIOD=2026-09
+
+Untuk bulan berikutnya ubah menjadi:
+
+PM_PERIOD=2026-10
+
+Edit:
+
+nano .env
+
+Kemudian restart bot:
+
+pm2 restart pm-wa-bot
+🔄 Prosedur Update Bulanan
+
+Gunakan urutan berikut setiap bulan:
+
+1. Update machines.csv
+        ↓
+2. Tambahkan mesin baru
+        ↓
+3. Cek ID duplikat
+        ↓
+4. Import data
+        ↓
+5. Update PM_PERIOD
+        ↓
+6. Restart bot
+        ↓
+7. Test /pm list
+        ↓
+8. Test /pm status
+
+Command:
+
+nano data/machines.csv
+cut -d',' -f4 data/machines.csv | sort | uniq -d
+node src/import-pm.js
+nano .env
+pm2 restart pm-wa-bot
+🤖 Menjalankan Bot
+
+Untuk menjalankan secara langsung:
+
+npm start
+
+Bot kemudian akan menampilkan QR Code jika session WhatsApp belum tersedia.
+
+Scan QR menggunakan WhatsApp pada HP yang digunakan sebagai nomor bot.
+
+🔄 Menjalankan Menggunakan PM2
+
+Install PM2:
+
+npm install -g pm2
+
+Jalankan bot:
+
+pm2 start src/index.js --name pm-wa-bot
+
+Simpan konfigurasi:
+
+pm2 save
+
+Agar bot otomatis berjalan setelah VPS restart:
+
+pm2 startup
+
+Ikuti command yang diberikan PM2.
+
+🛠️ Command PM WhatsApp
+
+Command digunakan di grup PM.
+
+/pm help
+
+Menampilkan bantuan command.
+
+/pm help
+/pm list
+
+Menampilkan daftar mesin yang belum selesai PM.
+
+/pm list
+/pm status
+
+Melihat status PM pada periode berjalan.
+
+/pm status
+
+Contoh informasi:
+
+📊 STATUS PM 2026-09
+
+❌ Belum PM: 25
+✅ Sudah PM: 75
+📦 Total masuk periode: 100
+/pm info
+
+Melihat detail mesin.
+
+Format:
+
+/pm info ID_MESIN
+
+Contoh:
+
+/pm info ATM001
+/pm done
+
+Menandai mesin sudah selesai dilakukan PM.
+
+Format:
+
+/pm done ID_MESIN
+
+Contoh:
+
+/pm done ATM001
+
+Setelah command berhasil, mesin akan tercatat sebagai sudah dilakukan PM.
+
+🔐 Hak Akses
+
+Bot menggunakan ADMIN_NUMBERS untuk menentukan siapa yang dapat melakukan perubahan data PM.
+
+Contoh:
+
+ADMIN_NUMBERS=6281111111111,6282222222222
+
+Nomor yang tidak terdaftar tidak dapat menjalankan command yang membutuhkan akses admin.
+
+👥 Grup PM
+
+Bot dapat dibatasi hanya aktif pada satu grup PM.
+
+Konfigurasi:
+
+PM_GROUP_ID=120363xxxxxxxx@g.us
+
+Dengan konfigurasi tersebut, command dari grup lain akan diabaikan.
+
+🔎 Mendapatkan Group ID
+
+Group ID WhatsApp biasanya berbentuk:
+
+120363xxxxxxxxxxxx@g.us
+
+Gunakan log bot untuk melihat:
+
+remoteJid
+
+Contoh:
+
+120363143891365779@g.us
+
+Masukkan nilai tersebut ke:
+
+PM_GROUP_ID=120363143891365779@g.us
+🧪 Testing Setelah Instalasi
+
+Setelah bot berjalan, lakukan pengujian berikut.
+
+Test 1 — Help
+/pm help
+Test 2 — List
+/pm list
+Test 3 — Status
+/pm status
+Test 4 — Info Mesin
+/pm info ATM001
+Test 5 — Selesaikan PM
+/pm done ATM001
+
+Kemudian cek:
+
+/pm status
+
+Pastikan jumlah mesin yang sudah PM bertambah.
+
+🩺 Troubleshooting
+Bot Tidak Jalan
+
+Cek PM2:
+
+pm2 status
+
+Lihat log:
+
+pm2 logs pm-wa-bot
+Bot Tidak Merespons Command
+
+Periksa:
+
+PM_GROUP_ID=
+
+Pastikan Group ID benar.
+
+Kemudian cek apakah nomor pengirim terdaftar:
+
+ADMIN_NUMBERS=
+Mesin Tidak Ditemukan
+
+Pastikan ID terdapat di:
+
+data/machines.csv
+
+Kemudian jalankan:
+
+node src/import-pm.js
+
+Setelah itu coba:
+
+/pm info ID_MESIN
+Bot Berhenti Setelah VPS Restart
+
+Pastikan PM2 sudah disimpan:
+
+pm2 save
+
+Kemudian:
+
+pm2 startup
+
+Ikuti command yang diberikan.
+
+🔄 Update Source Code dari GitHub
+
+Jika terdapat update program:
+
+cd ~/pm-wa-bot
+
+Ambil update:
+
+git pull
+
+Jika terdapat perubahan dependency:
+
+npm install
+
+Kemudian restart:
+
+pm2 restart pm-wa-bot
+🌐 Penggunaan untuk Area Lain
+
+Repository ini dirancang agar dapat digunakan oleh beberapa area.
+
+Setiap area sebaiknya memiliki:
+
+.env sendiri
+machines.csv sendiri
+WhatsApp bot/session sendiri
+Group PM sendiri
+daftar admin sendiri
+
+Contoh:
+
+Area Jakarta Utara
+├── .env
+└── data/machines.csv
+
+Area Jakarta Selatan
+├── .env
+└── data/machines.csv
+
+Area Tangerang
+├── .env
+└── data/machines.csv
+
+Source code tetap berasal dari repository yang sama.
+
+Dengan demikian jika ada update program:
+
+git pull
+
+setiap area dapat mengambil versi terbaru.
+
+🔐 Keamanan
+
+Jangan upload file berikut ke GitHub:
+
+.env
+auth_info_baileys/
+*.db
+*.sqlite
+node_modules/
+
+Pastikan .gitignore sudah berisi:
+
+node_modules/
+.env
+
+auth_info_baileys/
+auth_info/
+.baileys_auth/
+
+*.db
+*.sqlite
+*.sqlite3
+
+npm-debug.log*
+
+Gunakan .env.example sebagai template konfigurasi.
+
+Contoh:
+
+ADMIN_NUMBERS=628xxxxxxxxxx
+REMINDER_CHAT_JID=
+TZ=Asia/Jakarta
+PM_GROUP_ID=120xxxxxxxxxxxx@g.us
+PM_PERIOD=2026-09
+📌 Checklist Setup Area Baru
+[ ] Clone repository
+[ ] Install Node.js
+[ ] npm install
+[ ] Buat .env dari .env.example
+[ ] Masukkan nomor admin
+[ ] Masukkan PM_GROUP_ID
+[ ] Atur PM_PERIOD
+[ ] Isi machines.csv
+[ ] Jalankan import-pm.js
+[ ] Jalankan bot
+[ ] Scan QR WhatsApp
+[ ] Test /pm help
+[ ] Test /pm list
+[ ] Test /pm status
+[ ] Test /pm info ID_MESIN
+[ ] Test /pm done ID_MESIN
+[ ] Setup PM2
+[ ] pm2 save
+📅 Checklist Awal Bulan
+[ ] Dapatkan daftar mesin terbaru
+[ ] Update machines.csv
+[ ] Tambahkan mesin baru
+[ ] Update mesin pindahan
+[ ] Update mesin inactive
+[ ] Cek ID mesin duplikat
+[ ] Jalankan import-pm.js
+[ ] Update PM_PERIOD
+[ ] Restart PM2
+[ ] Test /pm list
+[ ] Test /pm status
+[ ] Test /pm info
+[ ] Commit perubahan ke GitHub
+[ ] Push ke GitHub
+📤 Commit Data Mesin ke GitHub
+
+Setelah data mesin diperbarui:
+
+git status
+
+Pastikan hanya file yang memang ingin disimpan yang berubah.
+
+Kemudian:
+
+git add data/machines.csv
+
+Commit:
+
+git commit -m "Update machine list October 2026"
+
+Push:
+
+git push
+🏗️ Alur Sistem
+             GitHub
+                │
+                │ git pull
+                ▼
+             VPS Area
+                │
+        ┌───────┴───────┐
+        │               │
+     .env          machines.csv
+        │               │
+        └───────┬───────┘
+                │
+                ▼
+          PM WhatsApp Bot
+                │
+                ▼
+          WhatsApp Group
+                │
+       ┌────────┼────────┐
+       ▼        ▼        ▼
+    PM List   PM Info  PM Done
+                         │
+                         ▼
+                    Database
+                         │
+                         ▼
+                    PM History
+📞 Alur Kerja PM
+/pm list
+    ↓
+Pilih ID Mesin
+    ↓
+/pm info ID_MESIN
+    ↓
+Lakukan Preventive Maintenance
+    ↓
+/pm done ID_MESIN
+    ↓
+Mesin tercatat selesai PM
+    ↓
+/pm status
+📄 Dokumentasi Tambahan
+
+Dokumentasi dapat dikembangkan menjadi:
+
+docs/
+├── USER-GUIDE.md
+├── INSTALLATION.md
+├── CONFIGURATION.md
+├── ADD-MACHINE-MONTHLY.md
+└── TROUBLESHOOTING.md
+
+README.md ini digunakan sebagai dokumentasi utama.
+
+Dokumentasi detail dapat ditempatkan pada folder docs/.
+
+👨‍💻 Maintenance
+
+Jika terdapat perubahan pada source code:
+
+git add .
+git commit -m "Update bot"
+git push
+
+Pada VPS/area yang menggunakan bot:
+
+git pull
+npm install
+pm2 restart pm-wa-bot
+✅ Ringkasan
+
+Untuk penggunaan sehari-hari:
+
+# Cek bot
+pm2 status
+
+# Lihat log
+pm2 logs pm-wa-bot
+
+# Update source
+git pull
+
+# Update dependency
+npm install
+
+# Restart bot
+pm2 restart pm-wa-bot
+
+Untuk update mesin bulanan:
+
+nano data/machines.csv
+cut -d',' -f4 data/machines.csv | sort | uniq -d
+node src/import-pm.js
+nano .env
+pm2 restart pm-wa-bot
+
+Kemudian test:
+
+/pm list
+/pm status
+/pm info ID_MESIN
+🎯 Prinsip Penggunaan
+
+Source code satu → digunakan banyak area.
+
+Setiap area cukup memiliki konfigurasi dan data mesin masing-masing, sedangkan update program dilakukan melalui GitHub.
+
+             GitHub Repository
+                    │
+          ┌─────────┼─────────┐
+          ▼         ▼         ▼
+       Area A    Area B    Area C
+        VPS        VPS       VPS
+          │         │         │
+        .env      .env      .env
+          │         │         │
+      machines   machines  machines
+        .csv       .csv      .csv
+
+Dengan struktur ini, penambahan area baru tidak perlu membuat source code dari awal.
