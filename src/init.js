@@ -5,8 +5,7 @@ const csv = fs.readFileSync("data/machines.csv", "utf8").trim().split(/\r?\n/);
 const header = csv.shift().split(",");
 
 function parseCsvLine(line) {
-  // Dataset contoh ini tidak memakai koma di field; parser sederhana cukup untuk starter.
-  return line.split(",");
+   return line.split(",");
 }
 
 const insert = db.prepare(`
